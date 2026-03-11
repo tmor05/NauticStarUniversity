@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <style>
 /* ===== RESET & BASE ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +55,7 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
 
 /* ===== PROGRESS DASHBOARD ===== */
 .dashboard{max-width:1280px;margin:-30px auto 40px;padding:0 24px;position:relative;z-index:2}
-.dashboard-card{background:var(--white);border-radius:var(--radius-lg);padding:28px 32px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:32px;flex-wrap:wrap}
+.dashboard-card{background:var(--white);border-radius:var(--radius-lg);padding:28px 32px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:32px;flex-wrap:wrap;position:relative}
 .dashboard-progress{flex:1;min-width:240px}
 .dashboard-progress h3{font-size:14px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
 .dashboard-progress .progress-text{font-size:28px;font-weight:800;color:var(--navy);margin-bottom:12px}
@@ -248,6 +249,45 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
 .subsection-title{font-size:20px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--navy)}
 .subsection-title svg{width:24px;height:24px;color:var(--ocean)}
 
+/* ===== AUTH VIEW ===== */
+.auth-container{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--ocean) 50%,#1e6b94 100%);padding:24px;position:relative;overflow:hidden}
+.auth-container::before{content:'';position:absolute;top:-30%;right:-15%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,.1) 0%,transparent 70%)}
+.auth-container::after{content:'';position:absolute;bottom:-20%;left:-10%;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%)}
+.auth-card{background:var(--white);border-radius:var(--radius-xl);padding:48px 40px;box-shadow:var(--shadow-xl);max-width:440px;width:100%;position:relative;z-index:1;text-align:center}
+.auth-card .auth-logo{width:160px;margin:0 auto 8px;opacity:.9}
+.auth-card h1{font-size:28px;font-weight:900;color:var(--navy);margin-bottom:4px}
+.auth-card h1 span{color:var(--ocean)}
+.auth-card .auth-tagline{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.auth-card .auth-subtitle{font-size:15px;color:var(--gray-500);margin-bottom:32px;line-height:1.5}
+.auth-form{display:flex;flex-direction:column;gap:16px;text-align:left}
+.auth-form label{font-size:13px;font-weight:700;color:var(--gray-600);margin-bottom:4px;display:block}
+.auth-form input{width:100%;padding:14px 16px;border:2px solid var(--gray-200);border-radius:var(--radius-md);font-size:15px;font-family:inherit;transition:var(--transition);background:var(--gray-50)}
+.auth-form input:focus{outline:none;border-color:var(--ocean);background:var(--white);box-shadow:0 0 0 4px rgba(26,82,118,.1)}
+.auth-form input::placeholder{color:var(--gray-400)}
+.auth-form .auth-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.auth-form .form-group{display:flex;flex-direction:column}
+.auth-error{font-size:13px;color:var(--error);font-weight:600;display:none;margin-top:-4px}
+.auth-error.show{display:block}
+.btn-auth{margin-top:8px;padding:16px;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--ocean),var(--ocean-light));color:var(--white);border:none;border-radius:var(--radius-md);cursor:pointer;transition:var(--transition)}
+.btn-auth:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+
+/* ===== HEADER BACK BUTTON ===== */
+.header-back-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-sm);color:var(--white);background:rgba(255,255,255,.1);transition:var(--transition);flex-shrink:0;cursor:pointer;border:none}
+.header-back-btn:hover{background:rgba(255,255,255,.2)}
+.header-back-btn svg{width:20px;height:20px}
+.header-back-btn.visible{display:flex}
+
+/* ===== HEADER USER AREA ===== */
+.header-user{display:flex;align-items:center;gap:12px}
+.header-welcome{font-size:13px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap}
+.btn-signout{padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;color:rgba(255,255,255,.6);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);transition:var(--transition);cursor:pointer}
+.btn-signout:hover{color:var(--white);background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)}
+
+/* ===== CERTIFICATE BUTTON ===== */
+.btn-certificate{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:var(--radius-lg);font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--navy),var(--ocean));color:var(--white);border:none;cursor:pointer;transition:var(--transition);margin-top:20px;box-shadow:0 4px 16px rgba(10,22,40,.3)}
+.btn-certificate:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(10,22,40,.4)}
+.btn-certificate svg{width:22px;height:22px}
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:768px){
   .header-inner{padding:0 16px}
@@ -255,6 +295,9 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
   .header-title span:first-child{font-size:13px}
   .header-title span:last-child{font-size:8px}
   .header-nav{display:none}
+  .header-welcome{display:none}
+  .auth-card{padding:32px 24px}
+  .auth-form .auth-row{grid-template-columns:1fr}
   .hero{padding:60px 16px 50px}
   .dashboard{padding:0 16px;margin-top:-20px}
   .dashboard-card{padding:20px;gap:20px}
@@ -279,19 +322,60 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
 </head>
 <body>
 
+<!-- AUTH VIEW -->
+<div class="view active" id="view-auth">
+  <div class="auth-container">
+    <div class="auth-card">
+      <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 113.867 11.469" aria-label="NauticStar"><defs><style>.al-w{fill:#0a1628;}.al-wf{fill:#0a1628;fill-rule:evenodd;}.al-g{fill:#fdbb27;}</style></defs><g><polygon class="al-wf" points="56.435 1.372 54.245 1.372 50.553 10.38 52.743 10.38 56.435 1.372"/><polygon class="al-wf" points="9.76 7.817 9.71 7.817 6.243 1.372 3.692 1.372 0 10.38 2.19 10.38 4.826 3.948 4.864 3.948 8.336 10.38 10.9 10.38 14.592 1.372 12.402 1.372 9.76 7.817"/><path class="al-wf" d="M20.825,1.372l-8.483,9.008h2.215l1.828-1.941h5.773l.237,1.941h2.215l-1.086-9.008h-2.7ZM17.99,6.71l3.493-3.695.464,3.695h-3.957Z"/><path class="al-wf" d="M35.711,6.915c-.449,1.095-1.942,1.854-4.02,1.854s-2.954-.747-2.5-1.854l2.325-5.674h-2.19l-2.448,5.972c-.78,1.904.726,3.297,4.098,3.297s6.021-1.394,6.801-3.297l2.448-5.972h-2.19l-2.325,5.674Z"/><path class="al-wf" d="M60.13,8.689c-1.095,0-2.779-.356-1.83-2.672,1.073-2.617,3.024-2.944,4.132-2.944h4.613l.738-1.801h-5.033c-1.904,0-5.206,1.321-6.609,4.745s.635,4.463,2.539,4.463h5.329l.734-1.791h-4.613Z"/><polygon class="al-wf" points="41.131 3.102 45.424 3.102 42.44 10.38 44.63 10.38 47.614 3.102 51.906 3.102 52.615 1.372 41.84 1.372 41.131 3.102"/><path class="al-wf" d="M74.71,4.775c-1.343-.124-2.525-.062-3.297-.274-.472-.124-.646-.336-.519-.647.24-.585,1.358-.946,3.237-.946,1.406,0,2.555.323,3.544,1.008l1.836-1.443c-.962-.871-2.558-1.319-4.76-1.319-3.26,0-5.486,1.12-6.21,2.887-.114.278-.176.53-.187.757-.009.181.032.344.11.482.115.202.355.516.832.821.062.04.129.073.201.1.727.278,1.796.429,3.195.49,1.88.087,3.05.087,2.724.883-.301.734-1.535,1.257-3.352,1.257-1.68,0-3.026-.448-4.182-1.394l-1.796,1.468c1.24,1.194,2.902,1.692,5.154,1.692,3.422,0,5.737-1.157,6.538-3.11.724-1.767-.352-2.451-3.069-2.712Z"/><path class="al-w" d="M83.386,5.495c.703-.013,1.45-.027,2.207-.041l.964-2.352h4.293l.709-1.729h-10.775l-.709,1.729h4.293l-.981,2.394Z"/><path class="al-w" d="M82.483,7.697l-1.1,2.683h2.19l1.083-2.641c-.75-.014-1.48-.028-2.173-.042Z"/><polygon class="al-g" points="100.607 1.372 97.804 1.372 89.32 10.38 91.536 10.38 100.607 1.372"/><path class="al-w" d="M104.176,1.372l-8.483,9.008h2.215l1.828-1.941h5.773l.237,1.941h2.215l-1.086-9.008h-2.7Zm-2.835,5.338l3.493-3.695.464,3.695h-3.957Z"/><path class="al-w" d="M111.818,5.717c1.003-.3,1.914-1.206,2.049-2.38a2.2,2.2,0,0,0-.706-1.965h-6.6l-.709,1.729h5.133a.688.688,0,0,1,.624,1.012c-.319.778-1.201.853-1.771.853h-1.4L106.5,10.38h2.19l1.232-3.005c1.285-.015,1.679.266,1.679,1.142a5.993,5.993,0,0,1-.134,1.171l-.052.319-.016.169-.004.101.005.103h2.263c-.073-.523-.073-1.096-.073-1.469a2.174,2.174,0,0,0-1.772-2.194Z"/></g></svg>
+      <h1>NauticStar <span>University</span></h1>
+      <div class="auth-tagline">Sales Training Platform</div>
+      <p class="auth-subtitle">Create your account to access all training modules and earn your Certified Sales Pro credential.</p>
+      <form class="auth-form" id="auth-form" onsubmit="handleRegister(event)">
+        <div class="auth-row">
+          <div class="form-group">
+            <label for="auth-first">First Name</label>
+            <input type="text" id="auth-first" placeholder="John" required autocomplete="given-name">
+          </div>
+          <div class="form-group">
+            <label for="auth-last">Last Name</label>
+            <input type="text" id="auth-last" placeholder="Smith" required autocomplete="family-name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="auth-email">Email Address</label>
+          <input type="email" id="auth-email" placeholder="john@dealership.com" required autocomplete="email">
+        </div>
+        <div class="auth-error" id="auth-error">Please fill in all fields.</div>
+        <button type="submit" class="btn-auth">Create Account →</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- HEADER -->
-<header class="header">
+<header class="header" id="app-header" style="display:none">
   <div class="header-inner">
-    <a href="https://nauticstarboats.com/" target="_blank" rel="noopener noreferrer" class="header-brand">
-      <svg class="header-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 113.867 11.469" aria-label="NauticStar"><defs><style>.ns-w{fill:#fff;}.ns-wf{fill:#fff;fill-rule:evenodd;}.ns-g{fill:#fdbb27;}</style></defs><g><polygon class="ns-wf" points="56.435 1.372 54.245 1.372 50.553 10.38 52.743 10.38 56.435 1.372"/><polygon class="ns-wf" points="9.76 7.817 9.71 7.817 6.243 1.372 3.692 1.372 0 10.38 2.19 10.38 4.826 3.948 4.864 3.948 8.336 10.38 10.9 10.38 14.592 1.372 12.402 1.372 9.76 7.817"/><path class="ns-wf" d="M20.825,1.372l-8.483,9.008h2.215l1.828-1.941h5.773l.237,1.941h2.215l-1.086-9.008h-2.7ZM17.99,6.71l3.493-3.695.464,3.695h-3.957Z"/><path class="ns-wf" d="M35.711,6.915c-.449,1.095-1.942,1.854-4.02,1.854s-2.954-.747-2.5-1.854l2.325-5.674h-2.19l-2.448,5.972c-.78,1.904.726,3.297,4.098,3.297s6.021-1.394,6.801-3.297l2.448-5.972h-2.19l-2.325,5.674Z"/><path class="ns-wf" d="M60.13,8.689c-1.095,0-2.779-.356-1.83-2.672,1.073-2.617,3.024-2.944,4.132-2.944h4.613l.738-1.801h-5.033c-1.904,0-5.206,1.321-6.609,4.745s.635,4.463,2.539,4.463h5.329l.734-1.791h-4.613Z"/><polygon class="ns-wf" points="41.131 3.102 45.424 3.102 42.44 10.38 44.63 10.38 47.614 3.102 51.906 3.102 52.615 1.372 41.84 1.372 41.131 3.102"/><path class="ns-wf" d="M74.71,4.775c-1.343-.124-2.525-.062-3.297-.274-.472-.124-.646-.336-.519-.647.24-.585,1.358-.946,3.237-.946,1.406,0,2.555.323,3.544,1.008l1.836-1.443c-.962-.871-2.558-1.319-4.76-1.319-3.26,0-5.486,1.12-6.21,2.887-.114.278-.176.53-.187.757-.009.181.032.344.11.482.115.202.355.516.832.821.062.04.129.073.201.1.727.278,1.796.429,3.195.49,1.88.087,3.05.087,2.724.883-.301.734-1.535,1.257-3.352,1.257-1.68,0-3.026-.448-4.182-1.394l-1.796,1.468c1.24,1.194,2.902,1.692,5.154,1.692,3.422,0,5.737-1.157,6.538-3.11.724-1.767-.352-2.451-3.069-2.712Z"/><path class="ns-w" d="M83.386,5.495c.703-.013,1.45-.027,2.207-.041l.964-2.352h4.293l.709-1.729h-10.775l-.709,1.729h4.293l-.981,2.394Z"/><path class="ns-w" d="M82.483,7.697l-1.1,2.683h2.19l1.083-2.641c-.75-.014-1.49-.028-2.173-.042Z"/><path class="ns-g" d="M79.16,6.296c.308-.006,13.858-.259,14.106-.264.171-.003.214-.088.152-.178-.1-.147-1.488-1.986-1.636-2.16-.277-.326.065-.671.366-.452.174.127,2.443,1.681,2.51,1.722.067.041.159.026.196-.065.037-.092,1.736-4.484,1.812-4.711.104-.311.608-.219.565.159-.029.253-.62,4.274-.654,4.442-.035.174.044.259.182.177.157-.093,3.003-1.786,3.222-1.915.357-.21.663.172.34.469-.202.186-1.958,1.827-2.078,1.94-.119.113-.055.197.066.204.121.007,7.446.171,7.841.177.532.008.543.647-.031.674-.698.033-8.561.425-8.655.423-.095-.002-.123.088-.095.161.029.073.923,1.827.99,1.979.146.332-.255.493-.454.329-.227-.187-1.942-1.546-2.023-1.627-.081-.081-.154-.053-.191.039-.037.092-1.451,3.359-1.512,3.463-.188.321-.612.212-.527-.191.054-.257.566-2.988.573-3.109.007-.121-.054-.232-.164-.171-.111.06-3.267,1.579-3.509,1.677-.28.114-.423-.143-.203-.311.184-.14,2.19-1.718,2.297-1.803.125-.1.047-.212-.068-.212-.214,0-13.121-.234-13.399-.259-.413-.037-.372-.6-.019-.607Z"/><path class="ns-w" d="M101.551,7.47l-1.193,2.91h2.19l1.237-3.017c-.845.04-1.585.076-2.234.107Z"/><path class="ns-w" d="M111.428,1.372h-7.378l-1.503,3.666c.767.017,1.527.033,2.171.047l.813-1.983h4.94c.933,0,1.287.473,1.006,1.157-.306.746-1.03,1.207-1.963,1.207l-2.011-.005-.713,1.736,1.206-.002.909,3.185h2.464l-.918-3.347c1.509-.373,2.583-1.294,3.165-2.712.719-1.754-.135-2.949-2.188-2.949Z"/></g></svg>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="header-back-btn" id="header-back-btn" onclick="handleHeaderBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <a href="https://nauticstarboats.com/" target="_blank" rel="noopener noreferrer" class="header-brand">
+        <svg class="header-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 113.867 11.469" aria-label="NauticStar"><defs><style>.ns-w{fill:#fff;}.ns-wf{fill:#fff;fill-rule:evenodd;}.ns-g{fill:#fdbb27;}</style></defs><g><polygon class="ns-wf" points="56.435 1.372 54.245 1.372 50.553 10.38 52.743 10.38 56.435 1.372"/><polygon class="ns-wf" points="9.76 7.817 9.71 7.817 6.243 1.372 3.692 1.372 0 10.38 2.19 10.38 4.826 3.948 4.864 3.948 8.336 10.38 10.9 10.38 14.592 1.372 12.402 1.372 9.76 7.817"/><path class="ns-wf" d="M20.825,1.372l-8.483,9.008h2.215l1.828-1.941h5.773l.237,1.941h2.215l-1.086-9.008h-2.7ZM17.99,6.71l3.493-3.695.464,3.695h-3.957Z"/><path class="ns-wf" d="M35.711,6.915c-.449,1.095-1.942,1.854-4.02,1.854s-2.954-.747-2.5-1.854l2.325-5.674h-2.19l-2.448,5.972c-.78,1.904.726,3.297,4.098,3.297s6.021-1.394,6.801-3.297l2.448-5.972h-2.19l-2.325,5.674Z"/><path class="ns-wf" d="M60.13,8.689c-1.095,0-2.779-.356-1.83-2.672,1.073-2.617,3.024-2.944,4.132-2.944h4.613l.738-1.801h-5.033c-1.904,0-5.206,1.321-6.609,4.745s.635,4.463,2.539,4.463h5.329l.734-1.791h-4.613Z"/><polygon class="ns-wf" points="41.131 3.102 45.424 3.102 42.44 10.38 44.63 10.38 47.614 3.102 51.906 3.102 52.615 1.372 41.84 1.372 41.131 3.102"/><path class="ns-wf" d="M74.71,4.775c-1.343-.124-2.525-.062-3.297-.274-.472-.124-.646-.336-.519-.647.24-.585,1.358-.946,3.237-.946,1.406,0,2.555.323,3.544,1.008l1.836-1.443c-.962-.871-2.558-1.319-4.76-1.319-3.26,0-5.486,1.12-6.21,2.887-.114.278-.176.53-.187.757-.009.181.032.344.11.482.115.202.355.516.832.821.062.04.129.073.201.1.727.278,1.796.429,3.195.49,1.88.087,3.05.087,2.724.883-.301.734-1.535,1.257-3.352,1.257-1.68,0-3.026-.448-4.182-1.394l-1.796,1.468c1.24,1.194,2.902,1.692,5.154,1.692,3.422,0,5.737-1.157,6.538-3.11.724-1.767-.352-2.451-3.069-2.712Z"/><path class="ns-w" d="M83.386,5.495c.703-.013,1.45-.027,2.207-.041l.964-2.352h4.293l.709-1.729h-10.775l-.709,1.729h4.293l-.981,2.394Z"/><path class="ns-w" d="M82.483,7.697l-1.1,2.683h2.19l1.083-2.641c-.75-.014-1.49-.028-2.173-.042Z"/><path class="ns-g" d="M79.16,6.296c.308-.006,13.858-.259,14.106-.264.171-.003.214-.088.152-.178-.1-.147-1.488-1.986-1.636-2.16-.277-.326.065-.671.366-.452.174.127,2.443,1.681,2.51,1.722.067.041.159.026.196-.065.037-.092,1.736-4.484,1.812-4.711.104-.311.608-.219.565.159-.029.253-.62,4.274-.654,4.442-.035.174.044.259.182.177.157-.093,3.003-1.786,3.222-1.915.357-.21.663.172.34.469-.202.186-1.958,1.827-2.078,1.94-.119.113-.055.197.066.204.121.007,7.446.171,7.841.177.532.008.543.647-.031.674-.698.033-8.561.425-8.655.423-.095-.002-.123.088-.095.161.029.073.923,1.827.99,1.979.146.332-.255.493-.454.329-.227-.187-1.942-1.546-2.023-1.627-.081-.081-.154-.053-.191.039-.037.092-1.451,3.359-1.512,3.463-.188.321-.612.212-.527-.191.054-.257.566-2.988.573-3.109.007-.121-.054-.232-.164-.171-.111.06-3.267,1.579-3.509,1.677-.28.114-.423-.143-.203-.311.184-.14,2.19-1.718,2.297-1.803.125-.1.047-.212-.068-.212-.214,0-13.121-.234-13.399-.259-.413-.037-.372-.6-.019-.607Z"/><path class="ns-w" d="M101.551,7.47l-1.193,2.91h2.19l1.237-3.017c-.845.04-1.585.076-2.234.107Z"/><path class="ns-w" d="M111.428,1.372h-7.378l-1.503,3.666c.767.017,1.527.033,2.171.047l.813-1.983h4.94c.933,0,1.287.473,1.006,1.157-.306.746-1.03,1.207-1.963,1.207l-2.011-.005-.713,1.736,1.206-.002.909,3.185h2.464l-.918-3.347c1.509-.373,2.583-1.294,3.165-2.712.719-1.754-.135-2.949-2.188-2.949Z"/></g></svg>
       <div class="header-title">
         <span>University</span>
         <span>Sales Training</span>
       </div>
     </a>
-    <nav class="header-nav">
-      <button onclick="navigate('home')" id="nav-home">Home</button>
-    </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <nav class="header-nav">
+        <button onclick="navigate('home')" id="nav-home">Home</button>
+      </nav>
+      <div class="header-user" id="header-user">
+        <span class="header-welcome" id="header-welcome"></span>
+        <button class="btn-signout" onclick="handleSignOut()">Sign Out</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -302,7 +386,7 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
 </div>
 
 <!-- HOME VIEW -->
-<div class="view active" id="view-home">
+<div class="view" id="view-home">
   <section class="hero">
     <div class="hero-content">
       <svg class="hero-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 113.867 11.469" aria-label="NauticStar"><defs><style>.hl-w{fill:#fff;}.hl-wf{fill:#fff;fill-rule:evenodd;}.hl-g{fill:#fdbb27;}</style></defs><g><polygon class="hl-wf" points="56.435 1.372 54.245 1.372 50.553 10.38 52.743 10.38 56.435 1.372"/><polygon class="hl-wf" points="9.76 7.817 9.71 7.817 6.243 1.372 3.692 1.372 0 10.38 2.19 10.38 4.826 3.948 4.864 3.948 8.336 10.38 10.9 10.38 14.592 1.372 12.402 1.372 9.76 7.817"/><path class="hl-wf" d="M20.825,1.372l-8.483,9.008h2.215l1.828-1.941h5.773l.237,1.941h2.215l-1.086-9.008h-2.7ZM17.99,6.71l3.493-3.695.464,3.695h-3.957Z"/><path class="hl-wf" d="M35.711,6.915c-.449,1.095-1.942,1.854-4.02,1.854s-2.954-.747-2.5-1.854l2.325-5.674h-2.19l-2.448,5.972c-.78,1.904.726,3.297,4.098,3.297s6.021-1.394,6.801-3.297l2.448-5.972h-2.19l-2.325,5.674Z"/><path class="hl-wf" d="M60.13,8.689c-1.095,0-2.779-.356-1.83-2.672,1.073-2.617,3.024-2.944,4.132-2.944h4.613l.738-1.801h-5.033c-1.904,0-5.206,1.321-6.609,4.745s.635,4.463,2.539,4.463h5.329l.734-1.791h-4.613Z"/><polygon class="hl-wf" points="41.131 3.102 45.424 3.102 42.44 10.38 44.63 10.38 47.614 3.102 51.906 3.102 52.615 1.372 41.84 1.372 41.131 3.102"/><path class="hl-wf" d="M74.71,4.775c-1.343-.124-2.525-.062-3.297-.274-.472-.124-.646-.336-.519-.647.24-.585,1.358-.946,3.237-.946,1.406,0,2.555.323,3.544,1.008l1.836-1.443c-.962-.871-2.558-1.319-4.76-1.319-3.26,0-5.486,1.12-6.21,2.887-.114.278-.176.53-.187.757-.009.181.032.344.11.482.115.202.355.516.832.821.062.04.129.073.201.1.727.278,1.796.429,3.195.49,1.88.087,3.05.087,2.724.883-.301.734-1.535,1.257-3.352,1.257-1.68,0-3.026-.448-4.182-1.394l-1.796,1.468c1.24,1.194,2.902,1.692,5.154,1.692,3.422,0,5.737-1.157,6.538-3.11.724-1.767-.352-2.451-3.069-2.712Z"/><path class="hl-w" d="M83.386,5.495c.703-.013,1.45-.027,2.207-.041l.964-2.352h4.293l.709-1.729h-10.775l-.709,1.729h4.293l-.981,2.394Z"/><path class="hl-w" d="M82.483,7.697l-1.1,2.683h2.19l1.083-2.641c-.75-.014-1.49-.028-2.173-.042Z"/><path class="hl-g" d="M79.16,6.296c.308-.006,13.858-.259,14.106-.264.171-.003.214-.088.152-.178-.1-.147-1.488-1.986-1.636-2.16-.277-.326.065-.671.366-.452.174.127,2.443,1.681,2.51,1.722.067.041.159.026.196-.065.037-.092,1.736-4.484,1.812-4.711.104-.311.608-.219.565.159-.029.253-.62,4.274-.654,4.442-.035.174.044.259.182.177.157-.093,3.003-1.786,3.222-1.915.357-.21.663.172.34.469-.202.186-1.958,1.827-2.078,1.94-.119.113-.055.197.066.204.121.007,7.446.171,7.841.177.532.008.543.647-.031.674-.698.033-8.561.425-8.655.423-.095-.002-.123.088-.095.161.029.073.923,1.827.99,1.979.146.332-.255.493-.454.329-.227-.187-1.942-1.546-2.023-1.627-.081-.081-.154-.053-.191.039-.037.092-1.451,3.359-1.512,3.463-.188.321-.612.212-.527-.191.054-.257.566-2.988.573-3.109.007-.121-.054-.232-.164-.171-.111.06-3.267,1.579-3.509,1.677-.28.114-.423-.143-.203-.311.184-.14,2.19-1.718,2.297-1.803.125-.1.047-.212-.068-.212-.214,0-13.121-.234-13.399-.259-.413-.037-.372-.6-.019-.607Z"/><path class="hl-w" d="M101.551,7.47l-1.193,2.91h2.19l1.237-3.017c-.845.04-1.585.076-2.234.107Z"/><path class="hl-w" d="M111.428,1.372h-7.378l-1.503,3.666c.767.017,1.527.033,2.171.047l.813-1.983h4.94c.933,0,1.287.473,1.006,1.157-.306.746-1.03,1.207-1.963,1.207l-2.011-.005-.713,1.736,1.206-.002.909,3.185h2.464l-.918-3.347c1.509-.373,2.583-1.294,3.165-2.712.719-1.754-.135-2.949-2.188-2.949Z"/></g></svg>
@@ -496,6 +580,12 @@ let currentQuestionIndex = 0;
 let quizAnswers = [];
 let shuffledQuestions = [];
 
+// User state (session-only, no localStorage)
+let currentUser = null; // {firstName, lastName, email}
+let certificationDate = null;
+let currentViewContext = 'home'; // tracks: 'home', 'module', 'quiz' and the moduleId for back navigation
+let currentModuleId = null;
+
 // ===== HELPER FUNCTIONS =====
 const checkSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const starSVG = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
@@ -522,6 +612,202 @@ function isCertified() {
   return getPassedCount() === 6;
 }
 
+// ===== AUTH FUNCTIONS =====
+function handleRegister(e) {
+  e.preventDefault();
+  const first = document.getElementById('auth-first').value.trim();
+  const last = document.getElementById('auth-last').value.trim();
+  const email = document.getElementById('auth-email').value.trim();
+  const errEl = document.getElementById('auth-error');
+  
+  if (!first || !last || !email) {
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+  
+  currentUser = { firstName: first, lastName: last, email: email };
+  document.getElementById('header-welcome').textContent = 'Welcome, ' + first;
+  document.getElementById('app-header').style.display = '';
+  navigate('home');
+}
+
+function handleSignOut() {
+  currentUser = null;
+  certificationDate = null;
+  // Reset all module state
+  MODULES.forEach(m => { moduleState[m.id] = { status: 'not-started', score: null, passed: false }; });
+  // Hide header, show auth
+  document.getElementById('app-header').style.display = 'none';
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-auth').classList.add('active');
+  // Clear form
+  document.getElementById('auth-first').value = '';
+  document.getElementById('auth-last').value = '';
+  document.getElementById('auth-email').value = '';
+  window.location.hash = '';
+}
+
+function isLoggedIn() {
+  return currentUser !== null;
+}
+
+// ===== HEADER BACK BUTTON =====
+function updateHeaderBackButton() {
+  const btn = document.getElementById('header-back-btn');
+  if (!btn) return;
+  if (currentViewContext === 'module' || currentViewContext === 'quiz') {
+    btn.classList.add('visible');
+  } else {
+    btn.classList.remove('visible');
+  }
+}
+
+function handleHeaderBack() {
+  if (currentViewContext === 'quiz' && currentModuleId) {
+    navigate('module/' + currentModuleId);
+  } else if (currentViewContext === 'module') {
+    navigate('home');
+  } else {
+    navigate('home');
+  }
+}
+
+// ===== CERTIFICATE GENERATION =====
+function downloadCertificate() {
+  if (!currentUser || !isCertified()) return;
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'letter' });
+  
+  const w = doc.internal.pageSize.getWidth();
+  const h = doc.internal.pageSize.getHeight();
+  
+  // Background
+  doc.setFillColor(10, 22, 40); // navy
+  doc.rect(0, 0, w, h, 'F');
+  
+  // Inner white area
+  const margin = 40;
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(margin, margin, w - margin*2, h - margin*2, 8, 8, 'F');
+  
+  // Gold decorative border
+  doc.setDrawColor(212, 168, 67);
+  doc.setLineWidth(3);
+  doc.roundedRect(margin + 12, margin + 12, w - margin*2 - 24, h - margin*2 - 24, 6, 6, 'S');
+  
+  // Inner thin border
+  doc.setLineWidth(0.75);
+  doc.roundedRect(margin + 18, margin + 18, w - margin*2 - 36, h - margin*2 - 36, 4, 4, 'S');
+  
+  // Gold corner accents (small squares)
+  const accentSize = 16;
+  const innerX = margin + 12;
+  const innerY = margin + 12;
+  const innerW = w - margin*2 - 24;
+  const innerH = h - margin*2 - 24;
+  doc.setFillColor(212, 168, 67);
+  // top-left
+  doc.rect(innerX - 2, innerY - 2, accentSize, 4, 'F');
+  doc.rect(innerX - 2, innerY - 2, 4, accentSize, 'F');
+  // top-right
+  doc.rect(innerX + innerW - accentSize + 2, innerY - 2, accentSize, 4, 'F');
+  doc.rect(innerX + innerW - 2, innerY - 2, 4, accentSize, 'F');
+  // bottom-left
+  doc.rect(innerX - 2, innerY + innerH - 2, accentSize, 4, 'F');
+  doc.rect(innerX - 2, innerY + innerH - accentSize + 2, 4, accentSize, 'F');
+  // bottom-right
+  doc.rect(innerX + innerW - accentSize + 2, innerY + innerH - 2, accentSize, 4, 'F');
+  doc.rect(innerX + innerW - 2, innerY + innerH - accentSize + 2, 4, accentSize, 'F');
+  
+  const centerX = w / 2;
+  let y = margin + 70;
+  
+  // NauticStar University header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(26, 82, 118); // ocean
+  doc.text('NAUTICSTAR', centerX, y, { align: 'center' });
+  y += 22;
+  doc.setFontSize(11);
+  doc.setTextColor(212, 168, 67); // gold
+  doc.text('U N I V E R S I T Y', centerX, y, { align: 'center' });
+  
+  // Decorative line
+  y += 24;
+  doc.setDrawColor(212, 168, 67);
+  doc.setLineWidth(1.5);
+  doc.line(centerX - 120, y, centerX + 120, y);
+  
+  // Certificate of Completion
+  y += 40;
+  doc.setFontSize(36);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(10, 22, 40); // navy
+  doc.text('Certificate of Completion', centerX, y, { align: 'center' });
+  
+  // "This certifies that"
+  y += 44;
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(107, 114, 128); // gray-500
+  doc.text('This certifies that', centerX, y, { align: 'center' });
+  
+  // User name
+  y += 42;
+  doc.setFontSize(30);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(10, 22, 40);
+  doc.text(currentUser.firstName + ' ' + currentUser.lastName, centerX, y, { align: 'center' });
+  
+  // Gold underline under name
+  y += 10;
+  doc.setDrawColor(212, 168, 67);
+  doc.setLineWidth(1);
+  const nameWidth = doc.getTextWidth(currentUser.firstName + ' ' + currentUser.lastName);
+  doc.line(centerX - nameWidth/2 - 20, y, centerX + nameWidth/2 + 20, y);
+  
+  // Description
+  y += 32;
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(107, 114, 128);
+  doc.text('has successfully completed all training modules and is recognized as a', centerX, y, { align: 'center' });
+  
+  // Certified title
+  y += 38;
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(26, 82, 118);
+  doc.text('Certified NauticStar Sales Pro', centerX, y, { align: 'center' });
+  
+  // Date
+  y += 40;
+  const dateStr = certificationDate ? certificationDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(107, 114, 128);
+  doc.text('Completed on ' + dateStr, centerX, y, { align: 'center' });
+  
+  // Bottom divider
+  y += 28;
+  doc.setDrawColor(212, 168, 67);
+  doc.setLineWidth(1.5);
+  doc.line(centerX - 120, y, centerX + 120, y);
+  
+  // Tagline
+  y += 26;
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(212, 168, 67);
+  doc.text('B E T T E R   B Y   N A T U R E', centerX, y, { align: 'center' });
+  
+  // Save
+  const filename = 'NauticStar_University_Certificate_' + currentUser.firstName + '_' + currentUser.lastName + '.pdf';
+  doc.save(filename);
+}
+
 // ===== RENDERING =====
 function renderDashboard() {
   const passed = getPassedCount();
@@ -529,8 +815,22 @@ function renderDashboard() {
   const el = document.getElementById('dashboard');
   
   let badgesHTML = '';
+  let certifiedBannerHTML = '';
+  
   if (isCertified()) {
+    if (!certificationDate) certificationDate = new Date();
     badgesHTML = `<div class="badge badge-certified">${starSVG} Certified NauticStar Sales Pro</div>`;
+    certifiedBannerHTML = `
+      <div class="certified-banner" style="margin-bottom:0;margin-top:20px;width:100%">
+        ${starSVG}
+        <h2>🏆 Certified NauticStar Sales Pro</h2>
+        <p>Congratulations${currentUser ? ', ' + currentUser.firstName : ''}! You've completed all 6 training modules.</p>
+        <button class="btn-certificate" onclick="downloadCertificate()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Certificate
+        </button>
+      </div>
+    `;
   }
   
   MODULES.forEach(m => {
@@ -546,6 +846,7 @@ function renderDashboard() {
       <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
     </div>
     <div class="dashboard-badges">${badgesHTML || '<div class="badge badge-pending">No modules completed yet</div>'}</div>
+    ${certifiedBannerHTML}
   `;
 }
 
@@ -843,15 +1144,32 @@ function navigate(route) {
 }
 
 function handleRoute() {
+  // Auth gate: if not logged in, always show auth
+  if (!isLoggedIn()) {
+    document.getElementById('app-header').style.display = 'none';
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-auth').classList.add('active');
+    currentViewContext = 'auth';
+    updateHeaderBackButton();
+    return;
+  }
+  
+  // User is logged in — make sure header is visible and auth is hidden
+  document.getElementById('app-header').style.display = '';
+  
   const hash = window.location.hash.slice(1) || 'home';
   const parts = hash.split('/');
   
   if (parts[0] === 'home' || hash === '') {
+    currentViewContext = 'home';
+    currentModuleId = null;
     renderDashboard();
     renderModules();
     showView('home');
   } else if (parts[0] === 'module' && parts[1]) {
     const moduleId = parts[1];
+    currentViewContext = 'module';
+    currentModuleId = moduleId;
     if (moduleId === 'brand') {
       renderBrandModule();
     } else {
@@ -859,9 +1177,13 @@ function handleRoute() {
     }
     showView('module');
   } else if (parts[0] === 'quiz' && parts[1]) {
+    currentViewContext = 'quiz';
+    currentModuleId = parts[1];
     startQuiz(parts[1]);
     showView('quiz');
   }
+  
+  updateHeaderBackButton();
 }
 
 // ===== INIT =====
