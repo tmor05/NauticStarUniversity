@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <style>
 /* ===== RESET & BASE ===== */
@@ -269,7 +270,25 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
 .auth-error{font-size:13px;color:var(--error);font-weight:600;display:none;margin-top:-4px}
 .auth-error.show{display:block}
 .btn-auth{margin-top:8px;padding:16px;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--ocean),var(--ocean-light));color:var(--white);border:none;border-radius:var(--radius-md);cursor:pointer;transition:var(--transition)}
-.btn-auth:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-auth:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-auth:disabled{opacity:.7;cursor:not-allowed;transform:none}
+
+/* ===== AUTH TABS ===== */
+.auth-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--gray-100);border-radius:var(--radius-md);padding:4px}
+.auth-tab{flex:1;padding:10px 16px;border-radius:calc(var(--radius-md) - 2px);font-size:14px;font-weight:700;color:var(--gray-500);background:transparent;transition:var(--transition);cursor:pointer;border:none}
+.auth-tab.active{background:var(--white);color:var(--ocean);box-shadow:var(--shadow-sm)}
+.auth-tab:hover:not(.active){color:var(--gray-700)}
+.auth-form-panel{display:none}
+.auth-form-panel.active{display:flex;flex-direction:column;gap:16px}
+
+/* ===== AUTH LOADING SPINNER ===== */
+.auth-spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:var(--white);border-radius:50%;animation:authSpin .6s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes authSpin{to{transform:rotate(360deg)}}
+
+/* ===== PAGE LOADING STATE ===== */
+.loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--ocean) 50%,#1e6b94 100%);flex-direction:column;gap:20px}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:authSpin .8s linear infinite}
+.loading-text{font-size:14px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:1px}
 
 /* ===== HEADER BACK BUTTON ===== */
 .header-back-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-sm);color:var(--white);background:rgba(255,255,255,.1);transition:var(--transition);flex-shrink:0;cursor:pointer;border:none}
@@ -322,15 +341,45 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
 </head>
 <body>
 
+<!-- LOADING SCREEN (shown while checking session) -->
+<div class="view active" id="view-loading">
+  <div class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading...</div>
+  </div>
+</div>
+
 <!-- AUTH VIEW -->
-<div class="view active" id="view-auth">
+<div class="view" id="view-auth">
   <div class="auth-container">
     <div class="auth-card">
       <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 113.867 11.469" aria-label="NauticStar"><defs><style>.al-w{fill:#0a1628;}.al-wf{fill:#0a1628;fill-rule:evenodd;}.al-g{fill:#d4a843;}</style></defs><g><polygon class="al-wf" points="56.435 1.372 54.245 1.372 50.553 10.38 52.743 10.38 56.435 1.372"/><polygon class="al-wf" points="9.76 7.817 9.71 7.817 6.243 1.372 3.692 1.372 0 10.38 2.19 10.38 4.826 3.948 4.864 3.948 8.336 10.38 10.9 10.38 14.592 1.372 12.402 1.372 9.76 7.817"/><path class="al-wf" d="M20.825,1.372l-8.483,9.008h2.215l1.828-1.941h5.773l.237,1.941h2.215l-1.086-9.008h-2.7ZM17.99,6.71l3.493-3.695.464,3.695h-3.957Z"/><path class="al-wf" d="M35.711,6.915c-.449,1.095-1.942,1.854-4.02,1.854s-2.954-.747-2.5-1.854l2.325-5.674h-2.19l-2.448,5.972c-.78,1.904.726,3.297,4.098,3.297s6.021-1.394,6.801-3.297l2.448-5.972h-2.19l-2.325,5.674Z"/><path class="al-wf" d="M60.13,8.689c-1.095,0-2.779-.356-1.83-2.672,1.073-2.617,3.024-2.944,4.132-2.944h4.613l.738-1.801h-5.033c-1.904,0-5.206,1.321-6.609,4.745s.635,4.463,2.539,4.463h5.329l.734-1.791h-4.613Z"/><polygon class="al-wf" points="41.131 3.102 45.424 3.102 42.44 10.38 44.63 10.38 47.614 3.102 51.906 3.102 52.615 1.372 41.84 1.372 41.131 3.102"/><path class="al-wf" d="M74.71,4.775c-1.343-.124-2.525-.062-3.297-.274-.472-.124-.646-.336-.519-.647.24-.585,1.358-.946,3.237-.946,1.406,0,2.555.323,3.544,1.008l1.836-1.443c-.962-.871-2.558-1.319-4.76-1.319-3.26,0-5.486,1.12-6.21,2.887-.114.278-.176.53-.187.757-.009.181.032.344.11.482.115.202.355.516.832.821.062.04.129.073.201.1.727.278,1.796.429,3.195.49,1.88.087,3.05.087,2.724.883-.301.734-1.535,1.257-3.352,1.257-1.68,0-3.026-.448-4.182-1.394l-1.796,1.468c1.24,1.194,2.902,1.692,5.154,1.692,3.422,0,5.737-1.157,6.538-3.11.724-1.767-.352-2.451-3.069-2.712Z"/><path class="al-w" d="M83.386,5.495c.703-.013,1.45-.027,2.207-.041l.964-2.352h4.293l.709-1.729h-10.775l-.709,1.729h4.293l-.981,2.394Z"/><path class="al-w" d="M82.483,7.697l-1.1,2.683h2.19l1.083-2.641c-.75-.014-1.49-.028-2.173-.042Z"/><path class="al-g" d="M79.16,6.296c.308-.006,13.858-.259,14.106-.264.171-.003.214-.088.152-.178-.1-.147-1.488-1.986-1.636-2.16-.277-.326.065-.671.366-.452.174.127,2.443,1.681,2.51,1.722.067.041.159.026.196-.065.037-.092,1.736-4.484,1.812-4.711.104-.311.608-.219.565.159-.029.253-.62,4.274-.654,4.442-.035.174.044.259.182.177.157-.093,3.003-1.786,3.222-1.915.357-.21.663.172.34.469-.202.186-1.958,1.827-2.078,1.94-.119.113-.055.197.066.204.121.007,7.446.171,7.841.177.532.008.543.647-.031.674-.698.033-8.561.425-8.655.423-.095-.002-.123.088-.095.161.029.073.923,1.827.99,1.979.146.332-.255.493-.454.329-.227-.187-1.942-1.546-2.023-1.627-.081-.081-.154-.053-.191.039-.037.092-1.451,3.359-1.512,3.463-.188.321-.612.212-.527-.191.054-.257.566-2.988.573-3.109.007-.121-.054-.232-.164-.171-.111.06-3.267,1.579-3.509,1.677-.28.114-.423-.143-.203-.311.184-.14,2.19-1.718,2.297-1.803.125-.1.047-.212-.068-.212-.214,0-13.121-.234-13.399-.259-.413-.037-.372-.6-.019-.607Z"/><path class="al-w" d="M101.551,7.47l-1.193,2.91h2.19l1.237-3.017c-.845.04-1.585.076-2.234.107Z"/><path class="al-w" d="M111.428,1.372h-7.378l-1.503,3.666c.767.017,1.527.033,2.171.047l.813-1.983h4.94c.933,0,1.287.473,1.006,1.157-.306.746-1.03,1.207-1.963,1.207l-2.011-.005-.713,1.736,1.206-.002.909,3.185h2.464l-.918-3.347c1.509-.373,2.583-1.294,3.165-2.712.719-1.754-.135-2.949-2.188-2.949Z"/></g></svg>
       <h1>NauticStar <span>University</span></h1>
       <div class="auth-tagline">Sales Training Platform</div>
-      <p class="auth-subtitle">Create your account to access all training modules and earn your Certified Sales Pro credential.</p>
-      <form class="auth-form" id="auth-form" onsubmit="handleRegister(event)">
+      <p class="auth-subtitle">Sign in to access all training modules and earn your Certified Sales Pro credential.</p>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <div class="auth-error" id="auth-error"></div>
+
+      <!-- LOGIN FORM -->
+      <form class="auth-form auth-form-panel active" id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="auth-login-email">Email Address</label>
+          <input type="email" id="auth-login-email" placeholder="john@dealership.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="auth-login-password">Password</label>
+          <input type="password" id="auth-login-password" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-auth" id="btn-login">Sign In →</button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form class="auth-form auth-form-panel" id="register-form" onsubmit="handleRegister(event)">
         <div class="auth-row">
           <div class="form-group">
             <label for="auth-first">First Name</label>
@@ -345,8 +394,15 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
           <label for="auth-email">Email Address</label>
           <input type="email" id="auth-email" placeholder="john@dealership.com" required autocomplete="email">
         </div>
-        <div class="auth-error" id="auth-error">Please fill in all fields.</div>
-        <button type="submit" class="btn-auth">Create Account →</button>
+        <div class="form-group">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" placeholder="At least 6 characters" required autocomplete="new-password" minlength="6">
+        </div>
+        <div class="form-group">
+          <label for="auth-confirm-password">Confirm Password</label>
+          <input type="password" id="auth-confirm-password" placeholder="Confirm your password" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-auth" id="btn-register">Create Account →</button>
       </form>
     </div>
   </div>
@@ -447,6 +503,16 @@ h1,h2,h3,h4,h5{font-weight:700;line-height:1.2;color:var(--navy)}
 </div>
 
 <script>
+// ===== SUPABASE INIT =====
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+let supabaseClient = null;
+try {
+  if (window.supabase && SUPABASE_URL.startsWith('https://')) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch(e) { console.warn('Supabase init failed:', e.message); }
+
 // ===== ALL DATA EMBEDDED =====
 const BRAND_DATA = {
   tagline: "BETTER BY NATURE",
@@ -580,8 +646,8 @@ let currentQuestionIndex = 0;
 let quizAnswers = [];
 let shuffledQuestions = [];
 
-// User state (session-only, no localStorage)
-let currentUser = null; // {firstName, lastName, email}
+// User state (backed by Supabase)
+let currentUser = null; // {id, firstName, lastName, email}
 let certificationDate = null;
 let currentViewContext = 'home'; // tracks: 'home', 'module', 'quiz' and the moduleId for back navigation
 let currentModuleId = null;
@@ -613,43 +679,254 @@ function isCertified() {
 }
 
 // ===== AUTH FUNCTIONS =====
-function handleRegister(e) {
-  e.preventDefault();
-  const first = document.getElementById('auth-first').value.trim();
-  const last = document.getElementById('auth-last').value.trim();
-  const email = document.getElementById('auth-email').value.trim();
+function switchAuthTab(tab) {
+  const loginTab = document.getElementById('tab-login');
+  const registerTab = document.getElementById('tab-register');
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const subtitle = document.querySelector('.auth-subtitle');
   const errEl = document.getElementById('auth-error');
-  
-  if (!first || !last || !email) {
-    errEl.classList.add('show');
-    return;
-  }
+  errEl.textContent = '';
   errEl.classList.remove('show');
-  
-  currentUser = { firstName: first, lastName: last, email: email };
-  document.getElementById('header-welcome').textContent = 'Welcome, ' + first;
+
+  if (tab === 'login') {
+    loginTab.classList.add('active');
+    registerTab.classList.remove('active');
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+    subtitle.textContent = 'Sign in to access all training modules and earn your Certified Sales Pro credential.';
+  } else {
+    registerTab.classList.add('active');
+    loginTab.classList.remove('active');
+    registerForm.classList.add('active');
+    loginForm.classList.remove('active');
+    subtitle.textContent = 'Create your account to access all training modules and earn your Certified Sales Pro credential.';
+  }
+}
+
+function showAuthError(msg) {
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = msg;
+  errEl.classList.add('show');
+}
+
+function showAuthLoading(loading) {
+  const btnLogin = document.getElementById('btn-login');
+  const btnRegister = document.getElementById('btn-register');
+  if (loading) {
+    btnLogin.disabled = true;
+    btnRegister.disabled = true;
+    btnLogin.innerHTML = '<span class="auth-spinner"></span>Signing In...';
+    btnRegister.innerHTML = '<span class="auth-spinner"></span>Creating Account...';
+  } else {
+    btnLogin.disabled = false;
+    btnRegister.disabled = false;
+    btnLogin.innerHTML = 'Sign In →';
+    btnRegister.innerHTML = 'Create Account →';
+  }
+}
+
+function enterApp() {
+  showAuthLoading(false);
+  document.getElementById('header-welcome').textContent = 'Welcome, ' + currentUser.firstName;
   document.getElementById('app-header').style.display = '';
   navigate('home');
 }
 
-function handleSignOut() {
+async function handleLogin(e) {
+  e.preventDefault();
+  showAuthLoading(true);
+  const errEl = document.getElementById('auth-error');
+  errEl.classList.remove('show');
+
+  const email = document.getElementById('auth-login-email').value.trim();
+  const password = document.getElementById('auth-login-password').value;
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    showAuthError(error.message);
+    showAuthLoading(false);
+    return;
+  }
+
+  // Load profile
+  const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.user.id).single();
+
+  if (profile) {
+    currentUser = { id: profile.id, firstName: profile.first_name, lastName: profile.last_name, email: profile.email };
+  } else {
+    currentUser = {
+      id: data.user.id,
+      firstName: data.user.user_metadata?.first_name || '',
+      lastName: data.user.user_metadata?.last_name || '',
+      email: data.user.email
+    };
+  }
+
+  await loadProgress();
+  enterApp();
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  showAuthLoading(true);
+  const errEl = document.getElementById('auth-error');
+  errEl.classList.remove('show');
+
+  const firstName = document.getElementById('auth-first').value.trim();
+  const lastName = document.getElementById('auth-last').value.trim();
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const confirmPassword = document.getElementById('auth-confirm-password').value;
+
+  if (password !== confirmPassword) {
+    showAuthError('Passwords do not match.');
+    showAuthLoading(false);
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthError('Password must be at least 6 characters.');
+    showAuthLoading(false);
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: { first_name: firstName, last_name: lastName }
+    }
+  });
+
+  if (error) {
+    showAuthError(error.message);
+    showAuthLoading(false);
+    return;
+  }
+
+  // Handle email confirmation requirement
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    showAuthError('An account with this email already exists.');
+    showAuthLoading(false);
+    return;
+  }
+
+  if (data.user && !data.session) {
+    showAuthError('Account created! Please check your email to confirm, then sign in.');
+    showAuthLoading(false);
+    switchAuthTab('login');
+    return;
+  }
+
+  // Create profile record
+  const { error: profileError } = await supabaseClient.from('profiles').insert({
+    id: data.user.id,
+    first_name: firstName,
+    last_name: lastName,
+    email: email
+  });
+
+  if (profileError) {
+    showAuthError('Account created but profile setup failed. Please try signing in.');
+    showAuthLoading(false);
+    return;
+  }
+
+  currentUser = { id: data.user.id, firstName, lastName, email };
+  enterApp();
+}
+
+async function handleSignOut() {
+  await supabaseClient.auth.signOut();
   currentUser = null;
   certificationDate = null;
-  // Reset all module state
   MODULES.forEach(m => { moduleState[m.id] = { status: 'not-started', score: null, passed: false }; });
-  // Hide header, show auth
   document.getElementById('app-header').style.display = 'none';
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-auth').classList.add('active');
-  // Clear form
-  document.getElementById('auth-first').value = '';
-  document.getElementById('auth-last').value = '';
-  document.getElementById('auth-email').value = '';
+  switchAuthTab('login');
   window.location.hash = '';
 }
 
 function isLoggedIn() {
   return currentUser !== null;
+}
+
+// ===== PROGRESS TRACKING =====
+async function loadProgress() {
+  if (!currentUser) return;
+
+  MODULES.forEach(m => { moduleState[m.id] = { status: 'not-started', score: null, passed: false }; });
+
+  const { data: progressData } = await supabaseClient.from('progress').select('*').eq('user_id', currentUser.id);
+
+  if (progressData) {
+    progressData.forEach(p => {
+      if (moduleState[p.module_id]) {
+        moduleState[p.module_id].score = p.score;
+        moduleState[p.module_id].passed = p.passed;
+        moduleState[p.module_id].status = p.passed ? 'passed' : (p.score !== null ? 'failed' : 'not-started');
+      }
+    });
+  }
+
+  const { data: cert } = await supabaseClient.from('certifications').select('*').eq('user_id', currentUser.id).single();
+  if (cert) {
+    certificationDate = new Date(cert.certified_at);
+  }
+}
+
+async function saveQuizResult(moduleId, score, passed) {
+  if (!currentUser) return;
+
+  await supabaseClient.from('progress').upsert({
+    user_id: currentUser.id,
+    module_id: moduleId,
+    score: score,
+    passed: passed,
+    completed_at: new Date().toISOString()
+  }, { onConflict: 'user_id,module_id' });
+
+  moduleState[moduleId].score = score;
+  moduleState[moduleId].passed = passed;
+  moduleState[moduleId].status = passed ? 'passed' : 'failed';
+
+  if (isCertified()) {
+    await supabaseClient.from('certifications').upsert({
+      user_id: currentUser.id,
+      certified_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    certificationDate = new Date();
+  }
+}
+
+async function initAuth() {
+  if (!supabaseClient) {
+    // Supabase SDK not loaded — fall back to showing auth screen
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-auth').classList.add('active');
+    return;
+  }
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+    if (profile) {
+      currentUser = { id: profile.id, firstName: profile.first_name, lastName: profile.last_name, email: profile.email };
+      await loadProgress();
+      // Hide loading, show app
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      enterApp();
+      return;
+    }
+  }
+  // No session — hide loading, show auth screen
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-auth').classList.add('active');
 }
 
 // ===== HEADER BACK BUTTON =====
@@ -1075,18 +1352,21 @@ function nextQuestion() {
   }
 }
 
-function showResults() {
+async function showResults() {
   const el = document.getElementById('quiz-content');
   const correctCount = quizAnswers.filter(a => a.correct).length;
   const total = shuffledQuestions.length;
   const pct = Math.round((correctCount / total) * 100);
   const passed = pct >= 80;
-  
+
   if (passed) {
     moduleState[currentQuizModule].passed = true;
     moduleState[currentQuizModule].status = 'passed';
   }
   moduleState[currentQuizModule].score = pct;
+
+  // Persist quiz result to Supabase
+  await saveQuizResult(currentQuizModule, pct, passed);
   
   const missed = quizAnswers.filter(a => !a.correct);
   let missedHTML = '';
@@ -1144,6 +1424,10 @@ function navigate(route) {
 }
 
 function handleRoute() {
+  // Hide loading screen if still visible
+  const loadingEl = document.getElementById('view-loading');
+  if (loadingEl) loadingEl.style.display = 'none';
+
   // Auth gate: if not logged in, always show auth
   if (!isLoggedIn()) {
     document.getElementById('app-header').style.display = 'none';
@@ -1153,7 +1437,7 @@ function handleRoute() {
     updateHeaderBackButton();
     return;
   }
-  
+
   // User is logged in — make sure header is visible and auth is hidden
   document.getElementById('app-header').style.display = '';
   
@@ -1189,7 +1473,7 @@ function handleRoute() {
 // ===== INIT =====
 window.addEventListener('hashchange', handleRoute);
 window.addEventListener('DOMContentLoaded', () => {
-  handleRoute();
+  initAuth();
 });
 
 // Keyboard shortcut: Escape closes lightbox
